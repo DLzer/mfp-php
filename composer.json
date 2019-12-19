@@ -23,7 +23,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "dlzer\\MFP": "src/"
+            "dlzer\\MFP\\": "src/"
         }
     }
 }
