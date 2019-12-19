@@ -39,6 +39,7 @@ That's it!
 
 ## Version Guide
 - 0.1.0 Initial Release
+- 0.1.1 Fix autoload issue
 
 ## Support
 Feel free to fork this project, any support is appreciated.
