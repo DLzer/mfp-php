@@ -103,8 +103,9 @@ class MfpService {
         // Check to see if username exists
         $mtitle = $doc->getElementById('settings')->childNodes;
         foreach( $mtitle as $node ) {
-            if( $node->nodeValue == "This Username is Invalid");
+            if( $node->nodeValue == "This Username is Invalid") {
                 return ['error' => "This Username is Invalid"];
+            }
         }
 
         // Check if the diary is set to private

@@ -42,6 +42,7 @@ That's it!
 - 0.1.1 Fix autoload issue
 - 0.1.2 Added check for Username
 - 0.1.3 Added check for date format
+- 0.1.4 Cleanup Username Check
 
 ## Support
 Feel free to fork this project, any support is appreciated.
