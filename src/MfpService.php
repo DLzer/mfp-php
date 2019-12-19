@@ -67,6 +67,7 @@ class MfpService {
     public function fetch()
     {
 
+        $this->checkDateFormat();
         $this->mfpRequest();
         return $this->parseResponse();
 
@@ -78,7 +79,7 @@ class MfpService {
     private function mfpRequest()
     {
 
-        $this->url      = $this->baseurl.$this->username."?from=".$this->date."&to=".$this->date;
+        $this->url      = $this->baseurl.(string)$this->username."?from=".(string)$this->date."&to=".(string)$this->date;
         $this->response = $this->guzzle->get( $this->url, ['allow_redirects' => true] );
         $this->response = (string)$this->response->getBody();
 
@@ -98,6 +99,13 @@ class MfpService {
         $doc = new DOMDocument;
         $doc->preserveWhiteSpace = false;
         $doc->loadHTML($this->response);
+
+        // Check to see if username exists
+        $mtitle = $doc->getElementById('settings')->childNodes;
+        foreach( $mtitle as $node ) {
+            if( $node->nodeValue == "This Username is Invalid");
+                return ['error' => "This Username is Invalid"];
+        }
 
         // Check if the diary is set to private
         $title = $doc->getElementById('settings')->childNodes;
@@ -135,6 +143,19 @@ class MfpService {
         $this->parsedResponse->fiber    = (int)substr($macro_array[8], 0, -1);
         
         return ['success' => $this->parsedResponse];
+
+    }
+
+    /**
+     * Check the formatting of a date with more a modern solutions then 'checkdate'. Validates input
+     * and uses an array sum trick which is a terse way of ensuring PHP did not do "month shifting".
+     * For more info reference: https://www.php.net/manual/en/datetime.getlasterrors.php
+     */
+    protected function checkDateFormat()
+    {
+
+        $this->date = DateTime::createFromFormat("Y-m-d", $date);
+        return $this->date !== false && !array_sum($dt::getLastErrors());
 
     }
 

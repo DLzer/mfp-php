@@ -13,7 +13,7 @@ It really is simple..
 $mfp = (new \DLzer\MFP\MfpService($username, $date))->fetch();
 ```
 
-## Installing PHP-MFP
+## Installing MFP-PHP
 
 The reccomended method for installing MFP-PHP is through
 [Composer](http://getcomposer.org).
@@ -40,6 +40,8 @@ That's it!
 ## Version Guide
 - 0.1.0 Initial Release
 - 0.1.1 Fix autoload issue
+- 0.1.2 Added check for Username
+- 0.1.3 Added check for date format
 
 ## Support
 Feel free to fork this project, any support is appreciated.
