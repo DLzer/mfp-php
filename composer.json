@@ -1,0 +1,29 @@
+{
+    "name": "dlzer/mfp-php",
+    "description": "PHP Libary for accessing MyFitnessPal diary data",
+    "type": "library",
+    "keywords": [
+        "php",
+        "mfp",
+        "php-mfp",
+        "api",
+        "myfitnesspal",
+        "service"
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^6.5"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dillon Lomnitzer",
+            "email": "yodaesu@gmail.com",
+            "homepage": "https://github.com/DLzer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "dlzer\\MFP": "src/"
+        }
+    }
+}
