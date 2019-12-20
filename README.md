@@ -37,12 +37,20 @@ require 'vendor/autoload.php';
 
 That's it!
 
+## Testing
+
+The most recent version of MFP-PHP includes PHPUnit test cases. To run them with composer:
+```bash
+./vendor/bin/phpunit --bootstrap vendor/autoload.php tests/MfpTest
+```
+
 ## Version Guide
 - 0.1.0 Initial Release
 - 0.1.1 Fix autoload issue
 - 0.1.2 Added check for Username
 - 0.1.3 Added check for date format
 - 0.1.4 Cleanup Username Check
+- 0.1.5 Added PHPUnit Test Cases
 
 ## Support
 Feel free to fork this project, any support is appreciated.
