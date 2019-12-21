@@ -135,8 +135,8 @@ class MfpService {
         $this->parsedResponse->username = $this->username;
         $this->parsedResponse->date     = $this->date;
         $this->parsedResponse->calories = (int)$macro_array[1];
-        $this->parsedResponse->fat      = (int)substr($macro_array[2], 0, -1);
-        $this->parsedResponse->carbs    = (int)substr($macro_array[3], 0, -1);
+        $this->parsedResponse->carbs      = (int)substr($macro_array[2], 0, -1);
+        $this->parsedResponse->fat    = (int)substr($macro_array[3], 0, -1);
         $this->parsedResponse->protein  = (int)substr($macro_array[4], 0, -1);
         $this->parsedResponse->cholest  = (int)substr($macro_array[5], 0, -2);
         $this->parsedResponse->sodium   = (int)substr($macro_array[6], 0, -2);

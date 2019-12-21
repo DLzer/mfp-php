@@ -51,6 +51,7 @@ The most recent version of MFP-PHP includes PHPUnit test cases. To run them with
 - 0.1.3 Added check for date format
 - 0.1.4 Cleanup Username Check
 - 0.1.5 Added PHPUnit Test Cases
+- 0.1.6 Macro Alignment Adjustment
 
 ## Support
 Feel free to fork this project, any support is appreciated.
