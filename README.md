@@ -9,6 +9,7 @@ MFP-PHP is a PHP library that makes it easy to request a single days macro data 
 ## Usage
 It really is simple..
 ```php
+require '../vendor/autoload.php';
 ## Create a new instance with Username and Date String ( YYYY-MM-DD ), then fetch the macro data.
 $mfp = (new \DLzer\MFP\MfpService($username, $date))->fetch();
 ```
@@ -52,6 +53,7 @@ The most recent version of MFP-PHP includes PHPUnit test cases. To run them with
 - 0.1.4 Cleanup Username Check
 - 0.1.5 Added PHPUnit Test Cases
 - 0.1.6 Macro Alignment Adjustment
+- 0.1.7 Error Handling, Cleanup & Prep for PSR-18 Http-Client
 
 ## Support
 Feel free to fork this project, any support is appreciated.

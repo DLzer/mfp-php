@@ -50,4 +50,14 @@ final class MfpTest extends TestCase
 
     }
 
+    public function testLargeIntParsing() {
+
+        $this->mfp = new MfpService('yodaesu', '2019-12-12');
+        $response = $this->mfp->parseLargeInt('2,020');
+        $response = (int)$response;
+
+        $this->assertEquals(2014);
+
+    }
+
 }

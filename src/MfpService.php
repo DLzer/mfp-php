@@ -2,19 +2,15 @@
 
 namespace DLzer\MFP;
 
-use GuzzleHttp\Client;
 use StdClass;
 use DOMDocument;
+use DateTime;
+use \GuzzleHttp\Client;
 
 /** 
  *  MfpService
  * 
  *  Manages requests to MyFitnessPal
- * 
- *  - mfpRequest
- *  - fetch
- *  - parseResponse
- * 
  */
 class MfpService {
 
@@ -31,33 +27,32 @@ class MfpService {
      */
     private $baseurl;
     /**
-     * @var url
-     */
-    private $url;
-    /**
      * @var response
      */
     private $response;
+    /**
+     * @var
+     */
+    private $request;
     /**
      * @var parsedResponse
      */
     private $parsedResponse;
     /**
-     * @var guzzle
+     * @var GuzzleHttpClient
      */
-    private $guzzle;
+    private $httpClient;
 
     /**
      * @param username
      * @param date
      */
-    public function __construct($username, $date)
-    {
+    public function __construct($username, $date) {
 
         $this->username = $username;
         $this->date = $date;
         $this->baseurl = "http://www.myfitnesspal.com/reports/printable_diary/";
-        $this->guzzle = new Client();
+        $this->httpClient = new Client();
 
     }
 
@@ -79,9 +74,13 @@ class MfpService {
     private function mfpRequest()
     {
 
-        $this->url      = $this->baseurl.(string)$this->username."?from=".(string)$this->date."&to=".(string)$this->date;
-        $this->response = $this->guzzle->get( $this->url, ['allow_redirects' => true] );
-        $this->response = (string)$this->response->getBody();
+        $this->request = $this->baseurl.(string)$this->username."?from=".(string)$this->date."&to=".(string)$this->date;
+
+        try {
+            $this->response = $this->httpClient->get($this->request, ['allow_redirects' => true]);
+        } catch (Exception $e) {
+            print('Threw exception: '.$e);
+        }
 
     }
 
@@ -98,29 +97,39 @@ class MfpService {
 
         $doc = new DOMDocument;
         $doc->preserveWhiteSpace = false;
-        $doc->loadHTML($this->response);
+        libxml_use_internal_errors(true); // Hush errors about invalid HTML. Invalid HTML is quite common, this just silences the warnings.
+        $doc->loadHTML((string)$this->response->getBody());
 
         // Check to see if username exists
         $mtitle = $doc->getElementById('settings')->childNodes;
-        foreach( $mtitle as $node ) {
-            if( $node->nodeValue == "This Username is Invalid") {
-                return ['error' => "This Username is Invalid"];
+        if ($mtitle != null) {
+            foreach( $mtitle as $node ) {
+                if( $node->nodeValue == "This Username is Invalid") {
+                    return ['error' => "This Username is Invalid"];
+                }
             }
         }
+    
 
         // Check if the diary is set to private
         $title = $doc->getElementById('settings')->childNodes;
-        foreach( $title as $node ) {
-            if ($node->nodeValue == "This Diary is Private") {
-                return ['error' => "Diary is Private"];
+        if ( $title != null ) {
+            foreach( $title as $node ) {
+                if ($node->nodeValue == "This Diary is Private") {
+                    return ['error' => "Diary is Private"];
+                }
             }
         }
+        
 
         // Check if their are any entries for the date range
         $dateEl = $doc->getElementById('date');
-        if($dateEl->textContent == "No diary entries were found for this date range.") {
-            return ['error' => "No diary entries were found for this date."];
+        if( $dateEl != null ) {
+            if($dateEl->textContent == "No diary entries were found for this date range.") {
+                return ['error' => "No diary entries were found for this date."];
+            }
         }
+        
 
         // Find the macro table row
         $tables = $doc->getElementsByTagName('tfoot');
@@ -134,29 +143,46 @@ class MfpService {
 
         $this->parsedResponse->username = $this->username;
         $this->parsedResponse->date     = $this->date;
-        $this->parsedResponse->calories = (int)$macro_array[1];
-        $this->parsedResponse->carbs      = (int)substr($macro_array[2], 0, -1);
-        $this->parsedResponse->fat    = (int)substr($macro_array[3], 0, -1);
-        $this->parsedResponse->protein  = (int)substr($macro_array[4], 0, -1);
-        $this->parsedResponse->cholest  = (int)substr($macro_array[5], 0, -2);
-        $this->parsedResponse->sodium   = (int)substr($macro_array[6], 0, -2);
-        $this->parsedResponse->sugars   = (int)substr($macro_array[7], 0, -1);
-        $this->parsedResponse->fiber    = (int)substr($macro_array[8], 0, -1);
+        $this->parsedResponse->calories = (int)$this->parseLargeInt($macro_array[1]);
+        $this->parsedResponse->carbs    = (int)$this->parseLargeInt(substr($macro_array[2], 0, -1));
+        $this->parsedResponse->fat      = (int)$this->parseLargeInt(substr($macro_array[3], 0, -1));
+        $this->parsedResponse->protein  = (int)$this->parseLargeInt(substr($macro_array[4], 0, -1));
+        $this->parsedResponse->cholest  = (int)$this->parseLargeInt(substr($macro_array[5], 0, -2));
+        $this->parsedResponse->sodium   = (int)$this->parseLargeInt(substr($macro_array[6], 0, -2));
+        $this->parsedResponse->sugars   = (int)$this->parseLargeInt(substr($macro_array[7], 0, -1));
+        $this->parsedResponse->fiber    = (int)$this->parseLargeInt(substr($macro_array[8], 0, -1));
         
         return ['success' => $this->parsedResponse];
 
     }
 
     /**
-     * Check the formatting of a date with more a modern solutions then 'checkdate'. Validates input
-     * and uses an array sum trick which is a terse way of ensuring PHP did not do "month shifting".
-     * For more info reference: https://www.php.net/manual/en/datetime.getlasterrors.php
+     * Using REGEX to confirm the date is in a correct format
      */
     protected function checkDateFormat()
     {
 
-        $this->date = DateTime::createFromFormat("Y-m-d", $date);
-        return $this->date !== false && !array_sum($dt::getLastErrors());
+        if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $this->date)) {
+            return true;
+        } else {
+            return ['error' => 'Incorrect date format'];
+        }
+
+    }
+
+    /**
+     * Convert large integers with a comma to INT
+     * 
+     * @param int
+     */
+    protected function parseLargeInt($int)
+    {
+
+        if(preg_match("/^[0-9,]+$/", $int)) {
+            $int = str_replace(',', '', $int);
+        }
+        
+        return $int;
 
     }
 
