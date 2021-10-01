@@ -14,45 +14,31 @@ use \GuzzleHttp\Client;
  */
 class MfpService {
 
-    /**
-     * @var username
-     */
+    /** @var string */
     private $username;
-    /**
-     * @var date
-     */
+    
+    /** @var string */
     private $date;
-    /**
-     * @var baseurl
-     */
+
+    /** @var string */
     private $baseurl;
-    /**
-     * @var response
-     */
+
+    /** @var array */
     private $response;
-    /**
-     * @var
-     */
-    private $request;
-    /**
-     * @var parsedResponse
-     */
-    private $parsedResponse;
-    /**
-     * @var GuzzleHttpClient
-     */
+
+    /** @var HttpClient */
     private $httpClient;
 
     /**
      * @param username
      * @param date
      */
-    public function __construct($username, $date) {
+    public function __construct($username, $date, $httpClient = null) {
 
-        $this->username = $username;
-        $this->date = $date;
-        $this->baseurl = "http://www.myfitnesspal.com/reports/printable_diary/";
-        $this->httpClient = new Client();
+        $this->username     = $username;
+        $this->date         = $date;
+        $this->baseurl      = "http://www.myfitnesspal.com/reports/printable_diary/";
+        $this->httpClient   = $httpClient;
 
     }
 

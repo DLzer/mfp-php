@@ -8,19 +8,18 @@
         "php-mfp",
         "api",
         "myfitnesspal",
-        "service"
+        "service",
+        "scraper"
     ],
     "require": {
-        "guzzlehttp/guzzle": "^6.5",
-        "psr/http-client": "^1.0",
-        "psr/http-factory": "^1.0"
+        "php": "^5.3 || ^7.0 || ^8.0"
     },
     "license": "MIT",
     "authors": [
         {
             "name": "Dillon Lomnitzer",
-            "email": "yodaesu@gmail.com",
-            "homepage": "https://github.com/DLzer"
+            "email": "dillon.lomnitzer@gmail.com",
+            "homepage": "https://raeinblack.com"
         }
     ],
     "autoload": {
