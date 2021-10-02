@@ -1,37 +1,26 @@
 <?php
 
+namespace App\Test\TestCase\Service;
+
+use DLzer\MfpService;
 use PHPUnit\Framework\TestCase;
 
-final class MfpTest extends TestCase
+class MfpServiceTest extends TestCase
 {
 
-    protected $client;
     protected $mfp;
-
-    protected function setUp()
-    {
-        $this->client = new GuzzleHttp\Client([
-            'base_uri' => 'http://www.myfitnesspal.com'
-        ]);
-
-    }
 
     public function testDateCanBeFormatted()
     {
 
+        
+        $this->mfp = new MfpService('yodaesu', '2019-12-12');
+        $dateCheck = $this->mfp->checkDateFormat();
+
         $this->assertEquals(
             true,
-            (new MfpService('test', '2019-12-12'))->checkDateFormat()
+            $dateCheck
         );
-
-    }
-
-    public function testMfpPositiveResponse()
-    {
-
-        $response = $this->client->get('/reports/printable_diary');
-
-        $this->assertEquals(200, $response->getStatusCode());
 
     }
 
@@ -41,7 +30,7 @@ final class MfpTest extends TestCase
         $this->mfp = new MfpService('yodaesu', '2019-12-12');
         $response = $this->mfp->fetch();
 
-        $response = json_decode(json_encode($response), true);
+        $response = json_encode($response);
 
         $this->assertArrayHasKey('user', $response);
         $this->assertArrayHasKey('carbs', $response['user']);
@@ -56,7 +45,7 @@ final class MfpTest extends TestCase
         $response = $this->mfp->parseLargeInt('2,020');
         $response = (int)$response;
 
-        $this->assertEquals(2014);
+        $this->assertEquals(2020, $response);
 
     }
 

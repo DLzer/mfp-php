@@ -1,11 +1,10 @@
 <?php
 
-namespace DLzer\MFP;
+namespace DLzer;
 
 use StdClass;
 use DOMDocument;
 use DateTime;
-use \GuzzleHttp\Client;
 
 /** 
  *  MfpService
@@ -21,25 +20,24 @@ class MfpService {
     private $date;
 
     /** @var string */
-    private $baseurl;
+    private $baseUrl;
 
-    /** @var array */
+    /** @var stdClass */
     private $response;
 
-    /** @var HttpClient */
-    private $httpClient;
-
     /**
-     * @param username
-     * @param date
+     * Constructor
+     *
+     * @param string $username The MFP Username.
+     * @param string $date The date in YYYY-MM-DD format. 
      */
-    public function __construct($username, $date, $httpClient = null) {
-
+    public function __construct(
+        string $username,
+        string $date
+        ) {
         $this->username     = $username;
         $this->date         = $date;
-        $this->baseurl      = "http://www.myfitnesspal.com/reports/printable_diary/";
-        $this->httpClient   = $httpClient;
-
+        $this->baseUrl      = "https://www.myfitnesspal.com/reports/printable_diary/";
     }
 
     /**
@@ -47,27 +45,47 @@ class MfpService {
      */
     public function fetch()
     {
-
         $this->checkDateFormat();
-        $this->mfpRequest();
+        $this->makeRequest();
         return $this->parseResponse();
-
     }
 
     /**
-     * Craft a URL to send via Guzzle, and set the response to a class variable
+     * Format the request URL
+     *
+     * @return string The request URL
      */
-    private function mfpRequest()
+    private function formatRequestString(): string
+    {
+        return $this->request = "{$this->baseUrl}{$this->username}?from={$this->date}&to={$this->date}";
+    }
+
+    /**
+     * Make a request using the formatted URL
+     */
+    private function makeRequest(): void
     {
 
-        $this->request = $this->baseurl.(string)$this->username."?from=".(string)$this->date."&to=".(string)$this->date;
+        // The pre-formatted request string
+        $requestString = $this->formatRequestString();
 
-        try {
-            $this->response = $this->httpClient->get($this->request, ['allow_redirects' => true]);
-        } catch (Exception $e) {
-            print('Threw exception: '.$e);
-        }
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $requestString);
+        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
+        $response   = curl_exec($ch);
+        $result     = json_decode($response);
+
+        curl_close($ch);
+
+        $this->response = $result;
+
+
+        return;
     }
 
     /**
@@ -84,7 +102,7 @@ class MfpService {
         $doc = new DOMDocument;
         $doc->preserveWhiteSpace = false;
         libxml_use_internal_errors(true); // Hush errors about invalid HTML. Invalid HTML is quite common, this just silences the warnings.
-        $doc->loadHTML((string)$this->response->getBody());
+        $doc->loadHTML((string)$this->response);
 
         // Check to see if username exists
         $mtitle = $doc->getElementById('settings')->childNodes;
@@ -145,7 +163,7 @@ class MfpService {
     /**
      * Using REGEX to confirm the date is in a correct format
      */
-    protected function checkDateFormat()
+    public function checkDateFormat()
     {
 
         if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $this->date)) {
@@ -161,7 +179,7 @@ class MfpService {
      * 
      * @param int
      */
-    protected function parseLargeInt($int)
+    public function parseLargeInt($int)
     {
 
         if(preg_match("/^[0-9,]+$/", $int)) {
